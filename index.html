@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>البحث عن دولة بالعربية</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background: #f5f5f5;
+      text-align: center;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 900px;
+      margin: 20px auto;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    input {
+      width: 300px;
+      max-width: 90%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #0077cc;
+      color: white;
+    }
+
+    button:hover {
+      background: #005fa3;
+    }
+
+    #map {
+      width: 100%;
+      height: 500px;
+      border-radius: 12px;
+      border: 2px solid #ccc;
+    }
+
+    #message {
+      margin: 10px 0;
+      font-size: 15px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>البحث عن دولة بالعربية</h2>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="countryInput"
+        placeholder="أدخل اسم الدولة بالعربية، مثل: الجزائر"
+      />
+      <button onclick="searchCountry()">بحث</button>
+    </div>
+
+    <div id="message">اكتب اسم دولة بالعربية ثم اضغط على "بحث".</div>
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // إنشاء الخريطة
+    const map = L.map('map').setView([20, 0], 2);
+
+    // طبقة الخريطة
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    async function searchCountry() {
+      const input = document.getElementById("countryInput").value.trim();
+      const message = document.getElementById("message");
+
+      if (!input) {
+        message.textContent = "يرجى إدخال اسم دولة.";
+        return;
+      }
+
+      message.textContent = "جاري البحث...";
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}&accept-language=ar&limit=1`;
+
+        const response = await fetch(url, {
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.length === 0) {
+          message.textContent = "لم يتم العثور على الدولة. حاول كتابة الاسم بشكل مختلف.";
+          return;
+        }
+
+        const place = data[0];
+        const lat = parseFloat(place.lat);
+        const lon = parseFloat(place.lon);
+
+        // حذف العلامة القديمة إن وجدت
+        if (marker) {
+          map.removeLayer(marker);
+        }
+
+        // تحريك الخريطة إلى الموقع
+        map.setView([lat, lon], 5);
+
+        // إضافة علامة
+        marker = L.marker([lat, lon]).addTo(map)
+          .bindPopup(`<b>${input}</b><br>${place.display_name}`)
+          .openPopup();
+
+        message.textContent = `تم العثور على: ${input}`;
+      } catch (error) {
+        message.textContent = "حدث خطأ أثناء البحث. تأكد من وجود اتصال بالإنترنت.";
+        console.error(error);
+      }
+    }
+
+    // دعم زر Enter
+    document.getElementById("countryInput").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        searchCountry();
+      }
+    });
+  </script>
+</body>
+</html>

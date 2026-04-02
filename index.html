@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>اميرة تبحث عن دولة بالعربية  </title>
+  <title>البحث عن دولة بالعربية</title>
 
   <link
     rel="stylesheet"
@@ -31,10 +31,22 @@
 
     .search-box {
       display: flex;
-      gap: 10px;
+      align-items: center;
       justify-content: center;
+      gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 15px;
+      direction: ltr;
+    }
+
+    .search-image {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: white;
+      padding: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
     input {
@@ -44,6 +56,8 @@
       font-size: 16px;
       border: 1px solid #bbb;
       border-radius: 8px;
+      direction: rtl;
+      text-align: right;
     }
 
     button {
@@ -79,11 +93,14 @@
     <h2>البحث عن دولة بالعربية</h2>
 
     <div class="search-box">
+      <img src="amira.png" alt="صورة" class="search-image" />
+
       <input
         type="text"
         id="countryInput"
         placeholder="أدخل اسم الدولة بالعربية، مثل: الجزائر"
       />
+
       <button onclick="searchCountry()">بحث</button>
     </div>
 
@@ -94,10 +111,8 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // إنشاء الخريطة
     const map = L.map('map').setView([20, 0], 2);
 
-    // طبقة الخريطة
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -135,15 +150,12 @@
         const lat = parseFloat(place.lat);
         const lon = parseFloat(place.lon);
 
-        // حذف العلامة القديمة إن وجدت
         if (marker) {
           map.removeLayer(marker);
         }
 
-        // تحريك الخريطة إلى الموقع
         map.setView([lat, lon], 5);
 
-        // إضافة علامة
         marker = L.marker([lat, lon]).addTo(map)
           .bindPopup(`<b>${input}</b><br>${place.display_name}`)
           .openPopup();
@@ -155,7 +167,6 @@
       }
     }
 
-    // دعم زر Enter
     document.getElementById("countryInput").addEventListener("keydown", function(event) {
       if (event.key === "Enter") {
         searchCountry();
